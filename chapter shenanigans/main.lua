@@ -29,6 +29,12 @@ if REPENTOGON then
     return key
   end
   
+  function mod:localizeHelper(str)
+    return string.gsub(str, '(#[%w_]+)', function(s)
+      return mod:localize(s)
+    end)
+  end
+  
   function mod:padName(name, num)
     local pad
     if Options.Language == 'jp' or Options.Language == 'kr' or Options.Language == 'zh' then
@@ -342,26 +348,20 @@ if REPENTOGON then
       for j, w in ipairs(v.tbl) do
         local wName = w.name
         if i == 3 then -- bosses
-          wName = string.gsub(wName, '(#[%w_]+)', function(s)
-            return mod:localize(s)
-          end)
+          wName = mod:localizeHelper(wName)
         end
         ImGui.AddElement(v.tab, '', ImGuiElement.SeparatorText, wName)
         for k, x in ipairs(w.options) do
           local chkId = v.chkIdPrefix .. j .. '-' .. k
           local xName = x.name
           if i == 1 or i == 3 then -- chapters/bosses
-            xName = string.gsub(xName, '(#[%w_]+)', function(s)
-              return mod:localize(s)
-            end)
+            xName = mod:localizeHelper(xName)
           end
           ImGui.AddCheckbox(v.tab, chkId, xName, nil, false)
           if x.hint then
             local xHint = x.hint
             if i == 1 then -- chapters
-              xHint = string.gsub(xHint, '(#[%w_]+)', function(s)
-                return mod:localize(s)
-              end)
+              xHint = mod:localizeHelper(xHint)
             end
             ImGui.SetHelpmarker(chkId, xHint)
           end
@@ -400,9 +400,7 @@ if REPENTOGON then
       'End 11 (#IT_LIVES)',
     }
     for i, v in ipairs(cmbMomsHeartOptions) do
-      cmbMomsHeartOptions[i] = string.gsub(v, '(#[%w_]+)', function(s)
-        return mod:localize(s)
-      end)
+      cmbMomsHeartOptions[i] = mod:localizeHelper(v)
     end
     ImGui.AddElement('shenanigansTabChaptersBosses', '', ImGuiElement.SeparatorText, momsHeart)
     ImGui.AddCombobox('shenanigansTabChaptersBosses', cmbMomsHeartId, '', nil, cmbMomsHeartOptions, 0, true)
@@ -562,9 +560,11 @@ if REPENTOGON then
         name = 'Chapter 3.5',
         options = {
           { name = '#MAUSOLEUM_NAME I' , stage = '5c', greedStage = '3c', sameLine = true },
-          { name = '#MAUSOLEUM_NAME II', stage = '6c', greedStage = '3c' },
+          { name = '#MAUSOLEUM_NAME II', stage = '6c', greedStage = '3c', sameLine = true },
+          { name = '#DADS_NOTE_NAME'   , stage = '6c', greedStage = '3c', preAscent = true },
           { name = '#GEHENNA_NAME I'   , stage = '5d', greedStage = '3d', sameLine = true },
-          { name = '#GEHENNA_NAME II'  , stage = '6d', greedStage = '3d' },
+          { name = '#GEHENNA_NAME II'  , stage = '6d', greedStage = '3d', sameLine = true },
+          { name = '#DADS_NOTE_NAME'   , stage = '6d', greedStage = '3d', preAscent = true },
         }
       },
       {
@@ -620,10 +620,7 @@ if REPENTOGON then
     local longestName = 0
     for _, v in ipairs(chapters2) do
       for _, w in ipairs(v.options) do
-        local name = string.gsub(w.name, '(#[%w_]+)', function(s)
-          return mod:localize(s)
-        end)
-        local nameLength = utf8.len(name) -- string.len
+        local nameLength = utf8.len(mod:localizeHelper(w.name)) -- string.len
         if nameLength > longestName then
           longestName = nameLength
         end
@@ -631,17 +628,19 @@ if REPENTOGON then
     end
     
     local autoReseed = false
+    local doAscent = false
     ImGui.AddCheckbox('shenanigansTabChaptersTwo', 'shenanigansChkChapterAutoReseed', 'Auto-reseed?', function(b)
       autoReseed = b
     end, autoReseed)
+    ImGui.AddCheckbox('shenanigansTabChaptersTwo', 'shenanigansChkChapterDoAscent', 'Ascent?', function(b)
+      doAscent = b
+    end, doAscent)
+    ImGui.SetHelpmarker('shenanigansChkChapterDoAscent', mod:localizeHelper('Backwards path: #BASEMENT_NAME - #MAUSOLEUM_NAME'))
     for i, v in ipairs(chapters2) do
       ImGui.AddElement('shenanigansTabChaptersTwo', '', ImGuiElement.SeparatorText, v.name)
       for j, w in ipairs(v.options) do
         local btnId = 'shenanigansBtnChapterTwo' .. i .. '-' .. j
-        local wName = string.gsub(w.name, '(#[%w_]+)', function(s)
-          return mod:localize(s)
-        end)
-        ImGui.AddButton('shenanigansTabChaptersTwo', btnId, mod:padName(wName, longestName), function()
+        ImGui.AddButton('shenanigansTabChaptersTwo', btnId, mod:padName(mod:localizeHelper(w.name), longestName), function()
           if Isaac.IsInGame() then
             if game:IsGreedMode() then
               if w.greedStage then
@@ -652,6 +651,18 @@ if REPENTOGON then
               end
             else
               if w.stage then
+                game:SetStateFlag(GameStateFlag.STATE_MAUSOLEUM_HEART_KILLED, false)
+                game:SetStateFlag(GameStateFlag.STATE_HEAVEN_PATH, false)
+                if w.preAscent then
+                  game:SetStateFlag(GameStateFlag.STATE_BACKWARDS_PATH_INIT, true)
+                  game:SetStateFlag(GameStateFlag.STATE_BACKWARDS_PATH, false)
+                elseif doAscent then
+                  game:SetStateFlag(GameStateFlag.STATE_BACKWARDS_PATH_INIT, false) -- true
+                  game:SetStateFlag(GameStateFlag.STATE_BACKWARDS_PATH, true)
+                else
+                  game:SetStateFlag(GameStateFlag.STATE_BACKWARDS_PATH_INIT, false)
+                  game:SetStateFlag(GameStateFlag.STATE_BACKWARDS_PATH, false)
+                end
                 Isaac.ExecuteCommand('stage ' .. w.stage)
                 if autoReseed then
                   Isaac.ExecuteCommand('reseed')
