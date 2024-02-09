@@ -1,4 +1,5 @@
 local mod = RegisterMod('Chapter Shenanigans', 1)
+local game = Game()
 
 if REPENTOGON then
   function mod:onRender()
@@ -16,6 +17,54 @@ if REPENTOGON then
     end
   end
   
+  function mod:localize(key)
+    for _, category in ipairs({ 'Stages', 'Entities', 'Items', 'Players' }) do
+      local s = Isaac.GetString(category, key)
+      
+      if s ~= nil and s ~= 'StringTable::InvalidCategory' and s ~= 'StringTable::InvalidKey' then
+        return s
+      end
+    end
+    
+    return key
+  end
+  
+  function mod:padName(name, num)
+    local pad
+    if Options.Language == 'jp' or Options.Language == 'kr' or Options.Language == 'zh' then
+      pad = '\u{3000}' -- ideographic space
+      
+      local codes = {}
+      for _, c in utf8.codes(name) do
+        if c == 0x20 then -- space
+          table.insert(codes, 0x3000)
+        elseif c >= 0x21 and c <= 0x7E then -- ascii chars
+          table.insert(codes, c + 0xFEE0) -- full width chars
+        else
+          table.insert(codes, c)
+        end
+      end
+      name = utf8.char(table.unpack(codes))
+    else
+      pad = ' ' -- space
+    end
+    
+    local nameLength = utf8.len(name) -- string.len
+    if num > nameLength then
+      local diff = num - nameLength
+      if diff % 2 ~= 0 then
+        name = pad .. name -- extra space before name
+        diff = diff - 1
+      end
+      if diff > 0 then
+        local halfDiff = diff / 2
+        name = string.rep(pad, halfDiff) .. name .. string.rep(pad, halfDiff)
+      end
+    end
+    
+    return name
+  end
+  
   function mod:setupImGui()
     if not ImGui.ElementExists('shenanigansMenu') then
       ImGui.CreateMenu('shenanigansMenu', '\u{f6d1} Shenanigans')
@@ -26,6 +75,7 @@ if REPENTOGON then
     
     ImGui.AddTabBar('shenanigansWindowChapters', 'shenanigansTabBarChapters')
     ImGui.AddTab('shenanigansTabBarChapters', 'shenanigansTabChapters', 'Chapters')
+    ImGui.AddTab('shenanigansTabBarChapters', 'shenanigansTabChaptersTwo', 'Chapters 2')
     ImGui.AddTab('shenanigansTabBarChapters', 'shenanigansTabChaptersModes', 'Modes')
     ImGui.AddTab('shenanigansTabBarChapters', 'shenanigansTabChaptersBosses', 'Bosses')
     ImGui.AddTab('shenanigansTabBarChapters', 'shenanigansTabChaptersEntities', 'Entities')
@@ -35,82 +85,82 @@ if REPENTOGON then
       {
         name = 'Chapter 1',
         options = {
-          { name = 'Basement'        , achievement = -1 },
-          { name = 'Cellar'          , achievement = Achievement.CELLAR },
-          { name = 'Burning Basement', achievement = Achievement.BURNING_BASEMENT },
+          { name = '#BASEMENT_NAME'        , achievement = -1 },
+          { name = '#CELLAR_NAME'          , achievement = Achievement.CELLAR },
+          { name = '#BURNING_BASEMENT_NAME', achievement = Achievement.BURNING_BASEMENT },
         }
       },
       {
         name = 'Chapter 1.5',
         options = {
-          { name = 'Downpour', achievement = Achievement.SECRET_EXIT, hint = 'A secret exit in boss rooms' },
-          { name = 'Dross'   , achievement = Achievement.DROSS },
+          { name = '#DOWNPOUR_NAME', achievement = Achievement.SECRET_EXIT, hint = 'A secret exit in boss rooms' },
+          { name = '#DROSS_NAME'   , achievement = Achievement.DROSS },
         }
       },
       {
         name = 'Chapter 2',
         options = {
-          { name = 'Caves'        , achievement = -1 },
-          { name = 'Catacombs'    , achievement = Achievement.CATACOMBS },
-          { name = 'Flooded Caves', achievement = Achievement.FLOODED_CAVES },
+          { name = '#CAVES_NAME'        , achievement = -1 },
+          { name = '#CATACOMBS_NAME'    , achievement = Achievement.CATACOMBS },
+          { name = '#FLOODED_CAVES_NAME', achievement = Achievement.FLOODED_CAVES },
         }
       },
       {
         name = 'Chapter 2.5',
         options = {
-          { name = 'Mines' , achievement = Achievement.SECRET_EXIT, hint = 'A secret exit in boss rooms' },
-          { name = 'Ashpit', achievement = Achievement.ASHPIT },
+          { name = '#MINES_NAME' , achievement = Achievement.SECRET_EXIT, hint = 'A secret exit in boss rooms' },
+          { name = '#ASHPIT_NAME', achievement = Achievement.ASHPIT },
         }
       },
       {
         name = 'Chapter 3',
         options = {
-          { name = 'Depths'     , achievement = -1 },
-          { name = 'Necropolis' , achievement = Achievement.NECROPOLIS },
-          { name = 'Dank Depths', achievement = Achievement.DANK_DEPTHS },
+          { name = '#DEPTHS_NAME'     , achievement = -1 },
+          { name = '#NECROPOLIS_NAME' , achievement = Achievement.NECROPOLIS },
+          { name = '#DANK_DEPTHS_NAME', achievement = Achievement.DANK_DEPTHS },
         }
       },
       {
         name = 'Chapter 3.5',
         options = {
-          { name = 'Mausoleum', achievement = Achievement.SECRET_EXIT, hint = 'A secret exit in boss rooms' },
-          { name = 'Gehenna'  , achievement = Achievement.GEHENNA },
+          { name = '#MAUSOLEUM_NAME', achievement = Achievement.SECRET_EXIT, hint = 'A secret exit in boss rooms' },
+          { name = '#GEHENNA_NAME'  , achievement = Achievement.GEHENNA },
         }
       },
       {
         name = 'Chapter 4',
         options = {
-          { name = 'Womb'        , achievement = Achievement.WOMB },
-          { name = 'Utero'       , achievement = Achievement.WOMB },
-          { name = 'Scarred Womb', achievement = Achievement.SCARRED_WOMB },
+          { name = '#WOMB_NAME'        , achievement = Achievement.WOMB },
+          { name = '#UTERO_NAME'       , achievement = Achievement.WOMB },
+          { name = '#SCARRED_WOMB_NAME', achievement = Achievement.SCARRED_WOMB },
         }
       },
       {
         name = 'Chapter 4.5',
         options = {
-          { name = '???'   , achievement = Achievement.BLUE_WOMB, hint = 'Blue Womb' },
-          { name = 'Corpse', achievement = Achievement.SECRET_EXIT, hint = 'A secret exit in boss rooms' },
+          { name = '#BLUE_WOMB_NAME', achievement = Achievement.BLUE_WOMB, hint = 'Blue Womb' },
+          { name = '#CORPSE_NAME'   , achievement = Achievement.SECRET_EXIT, hint = 'A secret exit in boss rooms' },
         }
       },
       {
         name = 'Chapter 5',
         options = {
-          { name = 'Sheol'    , achievement = Achievement.IT_LIVES, hint = 'It Lives!' },
-          { name = 'Cathedral', achievement = Achievement.IT_LIVES, hint = 'It Lives!' },
+          { name = '#SHEOL_NAME'    , achievement = Achievement.IT_LIVES, hint = '#IT_LIVES' },
+          { name = '#CATHEDRAL_NAME', achievement = Achievement.IT_LIVES, hint = '#IT_LIVES' },
         }
       },
       {
         name = 'Chapter 6',
         options = {
-          { name = 'Dark Room', achievement = Achievement.THE_NEGATIVE, hint = 'The Negative' },
-          { name = 'Chest'    , achievement = Achievement.THE_POLAROID, hint = 'The Polaroid' },
+          { name = '#DARK_ROOM_NAME', achievement = Achievement.THE_NEGATIVE, hint = '#THE_NEGATIVE_NAME' },
+          { name = '#CHEST_NAME'    , achievement = Achievement.THE_POLAROID, hint = '#THE_POLAROID_NAME' },
         }
       },
       {
         name = 'Endgame',
         options = {
-          { name = 'The Void'     , achievement = Achievement.THE_VOID },
-          { name = 'Home (Ascent)', achievement = Achievement.A_STRANGE_DOOR, hint = 'A strange door in Depths II' },
+          { name = '#THE_VOID_NAME'     , achievement = Achievement.THE_VOID },
+          { name = '#HOME_NAME (Ascent)', achievement = Achievement.A_STRANGE_DOOR, hint = 'A strange door in #DEPTHS_NAME II' },
         }
       },
     }
@@ -149,51 +199,51 @@ if REPENTOGON then
       {
         name = 'The Harbingers',
         options = {
-          { name = 'Famine, War, Pestilence, Death, The Headless Horseman', achievement = Achievement.THE_HARBINGERS },
-          { name = 'Conquest'                                             , achievement = Achievement.CONQUEST },
+          { name = '#FAMINE, #WAR, #PESTILENCE, #DEATH, #HEADLESS_HORSEMAN', achievement = Achievement.THE_HARBINGERS },
+          { name = '#CONQUEST'                                             , achievement = Achievement.CONQUEST },
         }
       },
       {
         name = 'Something Wicked This Way Comes',
         options = {
-          { name = 'Rag Man, Little Horn, Dangle, Turdlings, The Frail, The Stain, The Forsaken, Brownie', achievement = Achievement.SOMETHING_WICKED     , hint = 'Afterbirth bosses' },
-          { name = 'Rag Mega, Big Horn, Sisters Vis, The Matriarch'                                      , achievement = Achievement.SOMETHING_WICKED_PLUS, hint = 'Afterbirth+ bosses' },
+          { name = '#RAG_MAN, #LITTLE_HORN, #DANGLE, #TURDLING, #THE_FRAIL, #THE_STAIN, #THE_FORSAKEN, #BROWNIE', achievement = Achievement.SOMETHING_WICKED     , hint = 'Afterbirth bosses' },
+          { name = '#RAG_MEGA, #BIG_HORN, #SISTERS_VIS, #THE_MATRIARCH'                                         , achievement = Achievement.SOMETHING_WICKED_PLUS, hint = 'Afterbirth+ bosses' },
         }
       },
       {
         name = 'Chapter 1',
         options = {
-          { name = 'Steven', achievement = Achievement.STEVEN },
+          { name = '#STEVEN', achievement = Achievement.STEVEN },
         }
       },
       {
         name = 'Chapter 2',
         options = {
-          { name = 'C.H.A.D.', achievement = Achievement.CHAD },
+          { name = '#CHAD', achievement = Achievement.CHAD },
         }
       },
       {
         name = 'Chapter 3',
         options = {
-          { name = 'Gish', achievement = Achievement.GISH },
+          { name = '#GISH', achievement = Achievement.GISH },
         }
       },
       {
         name = 'Chapter 4',
         options = {
-          { name = 'Triachnid', achievement = Achievement.TRIACHNID },
+          { name = '#TRIACHNID', achievement = Achievement.TRIACHNID },
         }
       },
       {
         name = 'Chapter 6',
         options = {
-          { name = 'Mega Satan', achievement = Achievement.ANGELS, hint = 'Angel statues can be bombed' },
+          { name = '#MEGA_SATAN', achievement = Achievement.ANGELS, hint = 'Angel statues can be bombed' },
         }
       },
       {
-        name = 'The Void',
+        name = '#THE_VOID_NAME',
         options = {
-          { name = 'Portals', achievement = Achievement.THE_GATE_IS_OPEN },
+          { name = '#PORTAL', achievement = Achievement.THE_GATE_IS_OPEN },
         }
       },
     }
@@ -281,7 +331,7 @@ if REPENTOGON then
       },
     }
     
-    for _, a in ipairs({
+    for i, v in ipairs({
                         { tbl = chapters, tab = 'shenanigansTabChapters'        , chkIdPrefix = 'shenanigansChkChapter' },
                         { tbl = modes   , tab = 'shenanigansTabChaptersModes'   , chkIdPrefix = 'shenanigansChkChapterMode' },
                         { tbl = bosses  , tab = 'shenanigansTabChaptersBosses'  , chkIdPrefix = 'shenanigansChkChapterBoss' },
@@ -289,47 +339,73 @@ if REPENTOGON then
                         { tbl = rooms   , tab = 'shenanigansTabChaptersRooms'   , chkIdPrefix = 'shenanigansChkChapterRoom' },
                       })
     do
-      for i, v in ipairs(a.tbl) do
-        ImGui.AddElement(a.tab, '', ImGuiElement.SeparatorText, v.name)
-        for j, w in ipairs(v.options) do
-          local chkId = a.chkIdPrefix .. i .. '-' .. j
-          ImGui.AddCheckbox(a.tab, chkId, w.name, nil, false)
-          if w.hint then
-            ImGui.SetHelpmarker(chkId, w.hint)
+      for j, w in ipairs(v.tbl) do
+        local wName = w.name
+        if i == 3 then -- bosses
+          wName = string.gsub(wName, '(#[%w_]+)', function(s)
+            return mod:localize(s)
+          end)
+        end
+        ImGui.AddElement(v.tab, '', ImGuiElement.SeparatorText, wName)
+        for k, x in ipairs(w.options) do
+          local chkId = v.chkIdPrefix .. j .. '-' .. k
+          local xName = x.name
+          if i == 1 or i == 3 then -- chapters/bosses
+            xName = string.gsub(xName, '(#[%w_]+)', function(s)
+              return mod:localize(s)
+            end)
+          end
+          ImGui.AddCheckbox(v.tab, chkId, xName, nil, false)
+          if x.hint then
+            local xHint = x.hint
+            if i == 1 then -- chapters
+              xHint = string.gsub(xHint, '(#[%w_]+)', function(s)
+                return mod:localize(s)
+              end)
+            end
+            ImGui.SetHelpmarker(chkId, xHint)
           end
           ImGui.AddCallback(chkId, ImGuiCallback.Render, function()
             local gameData = Isaac.GetPersistentGameData()
             local value = true
-            if w.achievement > 0 then
-              value = gameData:Unlocked(w.achievement)
+            if x.achievement > 0 then
+              value = gameData:Unlocked(x.achievement)
             end
             ImGui.UpdateData(chkId, ImGuiData.Value, value)
           end)
           ImGui.AddCallback(chkId, ImGuiCallback.Edited, function(b)
-            if w.achievement > 0 then
-              mod:unlockAchievement(w.achievement, b)
+            if x.achievement > 0 then
+              mod:unlockAchievement(x.achievement, b)
             end
           end)
         end
       end
     end
     
+    local momsHeart = mod:localize('#MOMS_HEART')
+    local itLives = mod:localize('#IT_LIVES')
     local cmbMomsHeartId = 'shenanigansCmbChapterMomsHeart'
-    ImGui.AddElement('shenanigansTabChaptersBosses', '', ImGuiElement.SeparatorText, 'Mom\'s Heart')
-    ImGui.AddCombobox('shenanigansTabChaptersBosses', cmbMomsHeartId, 'Mom\'s Heart Ending', nil, {
+    local cmbMomsHeartOptions = {
       'No Mom Kills',
-      'End 1 (Eden)',
-      'End 2 (Rubber Cement)',
-      'End 3 (Transcendence)',
-      'End 4 (Wire Coat Hanger)',
+      'End 1 (#EDEN_NAME)',
+      'End 2 (#RUBBER_CEMENT_NAME)',
+      'End 3 (#TRANSCENDENCE_NAME)',
+      'End 4 (#WIRE_COAT_HANGER_NAME)',
       'End 5 (Everything Is Terrible)',
-      'End 6 (Ipecac)',
-      'End 7 (Experimental Treatment)',
-      'End 8 (A Quarter)',
-      'End 9 (Dr. Fetus)',
-      'End 10 (???)',
-      'End 11 (It Lives!)',
-    }, 0, true)
+      'End 6 (#IPECAC_NAME)',
+      'End 7 (#EXPERIMENTAL_TREATMENT_NAME)',
+      'End 8 (#A_QUARTER_NAME)',
+      'End 9 (#DR_FETUS_NAME)',
+      'End 10 (#BLUEBABY_NAME)',
+      'End 11 (#IT_LIVES)',
+    }
+    for i, v in ipairs(cmbMomsHeartOptions) do
+      cmbMomsHeartOptions[i] = string.gsub(v, '(#[%w_]+)', function(s)
+        return mod:localize(s)
+      end)
+    end
+    ImGui.AddElement('shenanigansTabChaptersBosses', '', ImGuiElement.SeparatorText, momsHeart)
+    ImGui.AddCombobox('shenanigansTabChaptersBosses', cmbMomsHeartId, '', nil, cmbMomsHeartOptions, 0, true)
     ImGui.SetHelpmarker(cmbMomsHeartId, 'This will reset your MOM_KILLS stat and toggle the IT_LIVES achievement. This will auto-increment on your next mom kill.')
     ImGui.AddCallback(cmbMomsHeartId, ImGuiCallback.Render, function()
       local gameData = Isaac.GetPersistentGameData()
@@ -356,7 +432,7 @@ if REPENTOGON then
     ImGui.AddText('shenanigansTabChaptersBosses', 'Mom Kills: 0 (Mom\'s Heart)', false, txtMomsHeartId)
     ImGui.AddCallback(txtMomsHeartId, ImGuiCallback.Render, function()
       local gameData = Isaac.GetPersistentGameData()
-      local label = 'Mom Kills: ' .. gameData:GetEventCounter(EventCounter.MOM_KILLS) .. ' (' .. (gameData:Unlocked(Achievement.IT_LIVES) and 'It Lives!' or 'Mom\'s Heart') .. ')'
+      local label = 'Mom Kills: ' .. gameData:GetEventCounter(EventCounter.MOM_KILLS) .. ' (' .. (gameData:Unlocked(Achievement.IT_LIVES) and itLives or momsHeart) .. ')'
       ImGui.UpdateData(txtMomsHeartId, ImGuiData.Label, label)
     end)
     
@@ -429,6 +505,168 @@ if REPENTOGON then
         mod:unlockAchievement(Achievement.STORE_UPGRADE_LV4, true)
       end
     end)
+    
+    local chapters2 = {
+      {
+        name = 'Chapter 1',
+        options = {
+          { name = '#BASEMENT_NAME I'         , stage = '1' , greedStage = '1' , sameLine = true },
+          { name = '#BASEMENT_NAME II'        , stage = '2' , greedStage = '1' },
+          { name = '#CELLAR_NAME I'           , stage = '1a', greedStage = '1a', sameLine = true },
+          { name = '#CELLAR_NAME II'          , stage = '2a', greedStage = '1a' },
+          { name = '#BURNING_BASEMENT_NAME I' , stage = '1b', greedStage = '1b', sameLine = true },
+          { name = '#BURNING_BASEMENT_NAME II', stage = '2b', greedStage = '1b' },
+        }
+      },
+      {
+        name = 'Chapter 1.5',
+        options = {
+          { name = '#DOWNPOUR_NAME I' , stage = '1c', greedStage = '1c', sameLine = true },
+          { name = '#DOWNPOUR_NAME II', stage = '2c', greedStage = '1c' },
+          { name = '#DROSS_NAME I'    , stage = '1d', greedStage = '1d', sameLine = true },
+          { name = '#DROSS_NAME II'   , stage = '2d', greedStage = '1d' },
+        }
+      },
+      {
+        name = 'Chapter 2',
+        options = {
+          { name = '#CAVES_NAME I'         , stage = '3' , greedStage = '2' , sameLine = true },
+          { name = '#CAVES_NAME II'        , stage = '4' , greedStage = '2' },
+          { name = '#CATACOMBS_NAME I'     , stage = '3a', greedStage = '2a', sameLine = true },
+          { name = '#CATACOMBS_NAME II'    , stage = '4a', greedStage = '2a' },
+          { name = '#FLOODED_CAVES_NAME I' , stage = '3b', greedStage = '2b', sameLine = true },
+          { name = '#FLOODED_CAVES_NAME II', stage = '4b', greedStage = '2b' },
+        }
+      },
+      {
+        name = 'Chapter 2.5',
+        options = {
+          { name = '#MINES_NAME I'  , stage = '3c', greedStage = '2c', sameLine = true },
+          { name = '#MINES_NAME II' , stage = '4c', greedStage = '2c' },
+          { name = '#ASHPIT_NAME I' , stage = '3d', greedStage = '2d', sameLine = true },
+          { name = '#ASHPIT_NAME II', stage = '4d', greedStage = '2d' },
+        }
+      },
+      {
+        name = 'Chapter 3',
+        options = {
+          { name = '#DEPTHS_NAME I'      , stage = '5' , greedStage = '3' , sameLine = true },
+          { name = '#DEPTHS_NAME II'     , stage = '6' , greedStage = '3' },
+          { name = '#NECROPOLIS_NAME I'  , stage = '5a', greedStage = '3a', sameLine = true },
+          { name = '#NECROPOLIS_NAME II' , stage = '6a', greedStage = '3a' },
+          { name = '#DANK_DEPTHS_NAME I' , stage = '5b', greedStage = '3b', sameLine = true },
+          { name = '#DANK_DEPTHS_NAME II', stage = '6b', greedStage = '3b' },
+        }
+      },
+      {
+        name = 'Chapter 3.5',
+        options = {
+          { name = '#MAUSOLEUM_NAME I' , stage = '5c', greedStage = '3c', sameLine = true },
+          { name = '#MAUSOLEUM_NAME II', stage = '6c', greedStage = '3c' },
+          { name = '#GEHENNA_NAME I'   , stage = '5d', greedStage = '3d', sameLine = true },
+          { name = '#GEHENNA_NAME II'  , stage = '6d', greedStage = '3d' },
+        }
+      },
+      {
+        name = 'Chapter 4',
+        options = {
+          { name = '#WOMB_NAME I'         , stage = '7' , greedStage = '4' , sameLine = true },
+          { name = '#WOMB_NAME II'        , stage = '8' , greedStage = '4' },
+          { name = '#UTERO_NAME I'        , stage = '7a', greedStage = '4a', sameLine = true },
+          { name = '#UTERO_NAME II'       , stage = '8a', greedStage = '4a' },
+          { name = '#SCARRED_WOMB_NAME I' , stage = '7b', greedStage = '4b', sameLine = true },
+          { name = '#SCARRED_WOMB_NAME II', stage = '8b', greedStage = '4b' },
+        }
+      },
+      {
+        name = 'Chapter 4.5',
+        options = {
+          { name = '#BLUE_WOMB_NAME', stage = '9' },
+          { name = '#CORPSE_NAME I' , stage = '7c', greedStage = '4c', sameLine = true },
+          { name = '#CORPSE_NAME II', stage = '8c', greedStage = '4c' },
+        }
+      },
+      {
+        name = 'Chapter 5',
+        options = {
+          { name = '#SHEOL_NAME'    , stage = '10' , greedStage = '5' },
+          { name = '#CATHEDRAL_NAME', stage = '10a', greedStage = '5a' },
+        }
+      },
+      {
+        name = 'Chapter 6',
+        options = {
+          { name = '#DARK_ROOM_NAME', stage = '11' },
+          { name = '#CHEST_NAME'    , stage = '11a' },
+        }
+      },
+      {
+        name = 'Endgame',
+        options = {
+          { name = '#THE_VOID_NAME'    , stage = '12' },
+          { name = '#HOME_NAME (day)'  , stage = '13', sameLine = true },
+          { name = '#HOME_NAME (night)', stage = '13a' },
+        }
+      },
+      {
+        name = 'Endgame (Greed)',
+        options = {
+          { name = '#THE_SHOP_NAME'   , greedStage = '6' },
+          { name = '#ULTRA_GREED_NAME', greedStage = '7' },
+        }
+      },
+    }
+    
+    local longestName = 0
+    for _, v in ipairs(chapters2) do
+      for _, w in ipairs(v.options) do
+        local name = string.gsub(w.name, '(#[%w_]+)', function(s)
+          return mod:localize(s)
+        end)
+        local nameLength = utf8.len(name) -- string.len
+        if nameLength > longestName then
+          longestName = nameLength
+        end
+      end
+    end
+    
+    local autoReseed = false
+    ImGui.AddCheckbox('shenanigansTabChaptersTwo', 'shenanigansChkChapterAutoReseed', 'Auto-reseed?', function(b)
+      autoReseed = b
+    end, autoReseed)
+    for i, v in ipairs(chapters2) do
+      ImGui.AddElement('shenanigansTabChaptersTwo', '', ImGuiElement.SeparatorText, v.name)
+      for j, w in ipairs(v.options) do
+        local btnId = 'shenanigansBtnChapterTwo' .. i .. '-' .. j
+        local wName = string.gsub(w.name, '(#[%w_]+)', function(s)
+          return mod:localize(s)
+        end)
+        ImGui.AddButton('shenanigansTabChaptersTwo', btnId, mod:padName(wName, longestName), function()
+          if Isaac.IsInGame() then
+            if game:IsGreedMode() then
+              if w.greedStage then
+                Isaac.ExecuteCommand('stage ' .. w.greedStage)
+                if autoReseed then
+                  Isaac.ExecuteCommand('reseed')
+                end
+              end
+            else
+              if w.stage then
+                Isaac.ExecuteCommand('stage ' .. w.stage)
+                if autoReseed then
+                  Isaac.ExecuteCommand('reseed')
+                end
+              end
+            end
+          end
+        end, false)
+        if w.sameLine then
+          ImGui.AddElement('shenanigansTabChaptersTwo', '', ImGuiElement.SameLine, '')
+        elseif w.stage and w.greedStage then
+          ImGui.SetHelpmarker(btnId, 'Normal+Greed')
+        end
+      end
+    end
   end
   
   -- launch options allow you to skip the menu
