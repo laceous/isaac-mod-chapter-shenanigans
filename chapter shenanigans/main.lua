@@ -651,12 +651,13 @@ if REPENTOGON then
               end
             else
               if w.stage then
+                local tempStage = tonumber(string.match(w.stage, '^(%d+)'))
                 game:SetStateFlag(GameStateFlag.STATE_MAUSOLEUM_HEART_KILLED, false)
                 game:SetStateFlag(GameStateFlag.STATE_HEAVEN_PATH, false)
                 if w.preAscent then
                   game:SetStateFlag(GameStateFlag.STATE_BACKWARDS_PATH_INIT, true)
                   game:SetStateFlag(GameStateFlag.STATE_BACKWARDS_PATH, false)
-                elseif doAscent then
+                elseif doAscent and tempStage >= 1 and tempStage <= 6 then
                   game:SetStateFlag(GameStateFlag.STATE_BACKWARDS_PATH_INIT, false) -- true
                   game:SetStateFlag(GameStateFlag.STATE_BACKWARDS_PATH, true)
                 else
