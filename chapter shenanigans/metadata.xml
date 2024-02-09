@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+    <name>Chapter Shenanigans</name>
+    <directory>chapter shenanigans</directory>
+    <id>3156964322</id>
+    <description>This mod requires REPENTOGON. Press the tilde key to open the new debug console and menu. There's a new Shenanigans option that will let you enable/disable chapters/modes/bosses/rooms/etc.
+
+I wanted an easy way to see which chapters were unlocked, and decided to extend this to achievements that aren't related to specific item/trinket/card/rune unlocks.
+
+Everything here is already in &quot;Stat and Achievement Shenanigans&quot;, just grouped together nicer.</description>
+    <version>1.1</version>
+    <visibility>Public</visibility>
+    <tag id="Lua"/>
+    <tag id="Rooms"/>
+    <tag id="Floors"/>
+    <tag id="Bosses"/>
+    <tag id="Tweaks"/>
+</metadata>
