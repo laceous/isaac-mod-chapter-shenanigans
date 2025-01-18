@@ -254,15 +254,6 @@ if REPENTOGON then
       },
     }
     
-    local rooms = {
-      {
-        name = 'Planetariums',
-        options = {
-          { name = 'Enabled', achievement = Achievement.PLANETARIUMS },
-        }
-      },
-    }
-    
     -- anything non-specific
     -- no active/passive items, no trinkets, no cards/runes
     local entities = {
@@ -333,6 +324,15 @@ if REPENTOGON then
           { name = 'Hell Game'    , achievement = Achievement.HELL_GAME },
           { name = 'Confessional' , achievement = Achievement.CONFESSIONAL },
           { name = 'Rotten Beggar', achievement = Achievement.ROTTEN_BEGGAR },
+        }
+      },
+    }
+    
+    local rooms = {
+      {
+        name = 'Planetariums',
+        options = {
+          { name = 'Enabled', achievement = Achievement.PLANETARIUMS },
         }
       },
     }
