@@ -2,9 +2,7 @@ local mod = RegisterMod('Chapter Shenanigans', 1)
 local game = Game()
 
 if REPENTOGON then
-  function mod:onRender()
-    mod:RemoveCallback(ModCallbacks.MC_MAIN_MENU_RENDER, mod.onRender)
-    mod:RemoveCallback(ModCallbacks.MC_POST_RENDER, mod.onRender)
+  function mod:onModsLoaded()
     mod:setupImGui()
   end
   
@@ -71,10 +69,13 @@ if REPENTOGON then
     return name
   end
   
-  function mod:setupImGui()
+  function mod:setupImGuiMenu()
     if not ImGui.ElementExists('shenanigansMenu') then
       ImGui.CreateMenu('shenanigansMenu', '\u{f6d1} Shenanigans')
     end
+  end
+  
+  function mod:setupImGui()
     ImGui.AddElement('shenanigansMenu', 'shenanigansMenuItemChapters', ImGuiElement.MenuItem, '\u{e0bb} Chapter Shenanigans')
     ImGui.CreateWindow('shenanigansWindowChapters', 'Chapter Shenanigans')
     ImGui.LinkWindowToElement('shenanigansWindowChapters', 'shenanigansMenuItemChapters')
@@ -681,7 +682,6 @@ if REPENTOGON then
     end
   end
   
-  -- launch options allow you to skip the menu
-  mod:AddCallback(ModCallbacks.MC_MAIN_MENU_RENDER, mod.onRender)
-  mod:AddCallback(ModCallbacks.MC_POST_RENDER, mod.onRender)
+  mod:setupImGuiMenu()
+  mod:AddCallback(ModCallbacks.MC_POST_MODS_LOADED, mod.onModsLoaded)
 end
