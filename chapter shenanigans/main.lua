@@ -366,7 +366,7 @@ if REPENTOGON then
             end
             ImGui.SetHelpmarker(chkId, xHint)
           end
-          ImGui.AddCallback(chkId, ImGuiCallback.Render, function()
+          ImGui.AddCallback(chkId, ImGuiCallback.Visible, function()
             local gameData = Isaac.GetPersistentGameData()
             local value = true
             if x.achievement > 0 then
@@ -375,6 +375,7 @@ if REPENTOGON then
             ImGui.UpdateData(chkId, ImGuiData.Value, value)
           end)
           ImGui.AddCallback(chkId, ImGuiCallback.Edited, function(b)
+            b = not b -- using Visible over Render flips the boolean for some reason
             if x.achievement > 0 then
               mod:unlockAchievement(x.achievement, b)
             end
@@ -429,7 +430,7 @@ if REPENTOGON then
     end)
     local txtMomsHeartId = 'shenanigansTxtChapterMomsHeart'
     ImGui.AddText('shenanigansTabChaptersBosses', 'Mom Kills: 0 (Mom\'s Heart)', false, txtMomsHeartId)
-    ImGui.AddCallback(txtMomsHeartId, ImGuiCallback.Render, function()
+    ImGui.AddCallback(txtMomsHeartId, ImGuiCallback.Visible, function()
       local gameData = Isaac.GetPersistentGameData()
       local label = 'Mom Kills: ' .. gameData:GetEventCounter(EventCounter.MOM_KILLS) .. ' (' .. (gameData:Unlocked(Achievement.IT_LIVES) and itLives or momsHeart) .. ')'
       ImGui.UpdateData(txtMomsHeartId, ImGuiData.Label, label)
@@ -451,7 +452,7 @@ if REPENTOGON then
         gameData:IncreaseEventCounter(v.stat, num - gameData:GetEventCounter(v.stat))
       end)
       ImGui.AddText('shenanigansTabChaptersEntities', v.label .. ' (normalized): 0 %% 1000 = 000', false, v.txtDonationId)
-      ImGui.AddCallback(v.txtDonationId, ImGuiCallback.Render, function()
+      ImGui.AddCallback(v.txtDonationId, ImGuiCallback.Visible, function()
         local gameData = Isaac.GetPersistentGameData()
         local statValue = gameData:GetEventCounter(v.stat)
         local label = v.label .. ' (normalized): ' .. statValue .. ' %% 1000 = ' .. string.format('%03d', statValue % 1000)
