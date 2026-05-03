@@ -8,8 +8,7 @@ if REPENTOGON then
   
   function mod:unlockAchievement(achievement, unlock)
     if unlock then
-      local gameData = Isaac.GetPersistentGameData()
-      gameData:TryUnlock(achievement)
+      Isaac.ExecuteCommand('achievement ' .. achievement) -- Isaac.GetPersistentGameData():Unlock / TryUnlock
     else
       Isaac.ExecuteCommand('lockachievement ' .. achievement)
     end
